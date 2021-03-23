@@ -1,0 +1,3 @@
+Substitutions	204063503
+Indels	25925202
+SVs	505529

@@ -1,0 +1,104 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r, fig.height=8, fig.width=10}
+library(ggplot2)
+library(cowplot)
+library(magick)
+
+fig1.h
+fig1.i <- ggdraw() + draw_image("Figures_G4/Fig1/Fig1L.png")
+fig1.j <- ggdraw() + draw_image("Figures_G4/Fig1/Fig1M.png")
+fig1.k <- ggdraw() + draw_image("Figures_G4/Fig1/Fig1N.png")
+
+fig1.ijk <-  plot_grid(fig1.i, fig1.j, fig1.k, nrow=1, labels = c("I", "J", "K"))
+
+fig1.bottom <-  plot_grid(fig1.h, fig1.ijk, ncol=1,  labels=c("H", "") )
+fig1.bottom
+```
+
+
+
+
+
+```{r, fig.height=14, fig.width=18}
+
+fig2.e <- ggdraw() + draw_image("Figures_G4/Fig2/Fig2E.png")
+fig2.abcd <-  plot_grid(fig2.a, fig2.b, fig2.c, fig2.d, ncol=2 , labels="AUTO", rel_heights = c(1.5, 1))
+fig2.efg <-  plot_grid(fig2.e, fig2.f, fig2.g, nrow=1, rel_widths = c(0.5,1,1), labels = c("E", "F", "G")  )
+
+
+fig2 <- plot_grid( fig2.abcd, fig2.efg, rel_heights = c(1.5,1), ncol=1)
+fig2
+
+```
+
+```{r, fig.height=7, fig.width=11}
+fig3.a <- ggdraw() + draw_image("Figures_G4/Fig3/Fig4A.png")
+fig3.b <- ggdraw() + draw_image("Figures_G4/Fig3/K562_HEPG2_G4_Z_DNA.png")
+fig3.c <- ggdraw() + draw_image("Figures_G4/Fig3/Fig4C.png")
+
+fig3.abc <- plot_grid(fig3.a, fig3.b, fig3.c, nrow=1, rel_widths = c(1,1,1), labels = "AUTO")
+
+fig3.de <-  plot_grid(fig3.h, fig3.i, nrow=1, labels = c("D", "E") )
+
+fig3 <- plot_grid(fig3.abc, fig3.de, nrow=2, rel_heights = c(1, 1))
+
+fig3
+```
+
+
+```{r, fig.height=2.5, fig.width=12}
+fig4.a <- ggdraw() + draw_image("Figures_G4/Fig4/Fig4A.png")
+fig4.b <- ggdraw() + draw_image("Figures_G4/Fig4/Fig4B.png")
+fig4.c <- ggdraw() + draw_image("Figures_G4/Fig4/Autism_Template_Non_Template_corrected_.png")
+fig4.d <- ggdraw() + draw_image("Figures_G4/Fig4/Z_DNA_length_expression (2).png")
+
+fig4.top <-  plot_grid(fig4.a, fig4.b, fig4.c, fig4.d, nrow=1, rel_widths = c(2,2,1,1.5), labels = "AUTO")
+fig4.top
+```
+
+
+
+```{r, fig.height=10, fig.width=18}
+fig5.a <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5A.png")
+fig5.b <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5B.png")
+fig5.c <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5C.png")
+fig5.c2 <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5C_.png")
+fig5.d <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5D.png")
+fig5.e <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5E.png")
+fig5.f <- ggdraw() + draw_image("Figures_G4/Fig5/Fig5F.png")
+
+
+fig5.ab <- plot_grid(fig5.a, fig5.b, nrow=1, rel_widths = c(1.35, 1), labels = "AUTO")
+
+fig5.c <- plot_grid(fig5.c, fig5.c2, nrow=1, rel_widths = c(1, 1), labels = "C")
+
+fig5.def <- plot_grid(fig5.d, fig5.e, fig5.f, nrow=1, rel_widths = c(1,1,1), labels = c("D", "E", "F"))
+
+
+fig5 <- plot_grid(fig5.ab, fig5.c, fig5.def, ncol=1, rel_heights = c(1,1,1))
+
+fig5
+
+```
+
+
+
+
+
+
+```{r}
+library(png)
+library(grid)
+img <- readPNG(system.file("img", "Rlogo.png", package="png"))
+g <- rasterGrob(img, interpolate=TRUE)
+
+qplot(1:10, 1:10, geom="blank") +
+  annotation_custom(g, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+  geom_point()
+```
+
