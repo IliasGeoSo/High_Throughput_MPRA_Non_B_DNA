@@ -11,3 +11,7 @@ The folder simulations contains scripts for the generation of germline variant c
 The folder GO contains the table with the gene promoters and the Non-B DNA motifs found as well as the genes found associated with each Non-B DNA motif.
 
 The folder Heatmaps_bubble contains the tables with the enrichments and p-values used for the generation of the graphs for the distribution of Non-B DNA motifs in regulatory elements.
+
+The folder Volcano contains the tables with the relative expression difference and p-value for Non-B DNA motifs and Transcription Factors.
+
+The folder TSS contains the single base-pair resolution of the occurrences of each Non-B DNA motif.
