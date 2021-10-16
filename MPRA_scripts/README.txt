@@ -2,6 +2,9 @@ The script functions.py contains basic functions used for the detection of Non-B
 
 The functions accept DNA sequence strings as input. They also constrain by the spacer and arm lengths for IRs, DRs and MRs. G-quadruplexes were identiified in both orienttations by reverse complementing the DNA sequence string.
 
+Library for Non-B DNA motifs in K562 and HEK293T cell lines: HEK293T_K562_NonB_Library.fasta
+Library for Autism variants in NPC cell line: NPC_Autism_Library.fasta
+
 Detection of G4 motifs was performed with:
 G4s=re.finditer("([gG]{3,}\w{1,7}){3,}[gG]{3,}",seq)
 
