@@ -1,6 +1,6 @@
 **The code and graphs provided are part of the manuscript entitled: "High-throughput characterization of the role of non-B DNA motifs on promoter function"**
 
-This reposiotry and its sub-folders contain the scripts and tables for the generation of figures for this manuscript.
+This repository and its sub-folders contain the scripts and tables for the generation of figures for this manuscript.
 
 The file Promoter_figures.nb.html contains the code and vizualizations for the majority of the analyses in the manuscript.
 
@@ -8,5 +8,6 @@ The folder MPRA_scripts contains scripts used for the identification of non-B DN
 
 The folder simulations contains scripts for the generation of germline variant controls.
 
+The folder GO contains the table with the gene promoters and the Non-B DNA motifs found as well as the genes found associated with each Non-B DNA motif.
 
-
+The folder Heatmaps_bubble contains the tables with the enrichments and p-values used for the generation of the graphs for the distribution of Non-B DNA motifs in regulatory elements.
