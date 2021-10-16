@@ -1,6 +1,6 @@
 **The code and graphs provided are part of the manuscript entitled: "High-throughput characterization of the role of non-B DNA motifs on promoter function"**
 
-This repository and its sub-folders contain the scripts and tables for the generation of figures for this manuscript.
+This repository and its constituent sub-folders contain the scripts and tables for the generation of figures for this manuscript.
 
 The file Promoter_figures.nb.html contains the code and vizualizations for the majority of the analyses in the manuscript.
 
