@@ -15,3 +15,5 @@ The folder Heatmaps_bubble contains the tables with the enrichments and p-values
 The folder Volcano contains the tables with the relative expression difference and p-value for Non-B DNA motifs and Transcription Factors.
 
 The folder TSS contains the single base-pair resolution of the occurrences of each Non-B DNA motif.
+
+The folder Nucleotide_resolution_plots contains scripts the mutational enrichment of Non-B DNA motifs relative to different mutation categories.
