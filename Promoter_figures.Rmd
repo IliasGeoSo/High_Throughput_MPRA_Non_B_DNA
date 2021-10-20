@@ -1,0 +1,1169 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(data.table)
+library(reshape2)
+library(ggplot2)
+library(readr)
+library(Hmisc)
+library(cowplot)
+```
+
+
+
+```{r}
+get_bubble_table <- function(table_in){
+
+bubble_table <- t(table_in)
+bubble_table <- data.frame(bubble_table)
+bubble_table$feature <- row.names(bubble_table)
+bubble_table <- data.table(bubble_table)
+colnames(bubble_table) <- as.character(unlist(bubble_table[1,]))
+bubble_table = bubble_table[-1, ]
+colnames(bubble_table) <- c("Enrichment", "logP", "Features")
+
+bubble_table$Features <-  factor(bubble_table$Features, levels= c("Upstream 1kB of TSS", "5'UTR", "Genic",  "Coding", "Intronic", "3'UTR", "Downstream 1kB of TES"))
+bubble_table[ , logP:=as.numeric(as.character(logP)) ]
+bubble_table[ , Enrichment:=as.numeric(as.character(Enrichment)) ]
+bubble_table[ , significance:="NS" ]
+bubble_table[ logP  >  -log10(0.05)  , significance:="S" ]
+bubble_table[ logP  >  -log10(0.001) , significance:="SS" ]
+
+
+}
+```
+
+
+```{r}
+
+Template_Non_Template_phyloP_G4s_Ab <- fread("./Template_Non_Template_phyloP_G4s_Ab")
+
+
+Template_Non_Template_phyloP_G4s_Ab.bubble_table <-  get_bubble_table(Template_Non_Template_phyloP_G4s_Ab)
+
+
+ggplot() +
+  geom_point(data=Template_Non_Template_phyloP_G4s_Ab.bubble_table, aes(Features, Enrichment, size=logP, colour=significance )) +
+  theme_bw() +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 15))  + theme(axis.text = element_text(vjust = 0))+labs(x = NULL, y = "Conservation ratio") +
+   guides(size=guide_legend(title="-log(p-value)")) +
+  scale_color_manual(name = "Significance", labels = c("Not significant", "p-value < 0.05", "p-value < 0.001"), values=c("black", "darkorange", "firebrick" )) + 
+  theme(axis.text.x = element_text(vjust = 0.25))
+
+```
+
+
+
+```{r}
+
+P_vals_Names_Strand_Aym <-  fread("./P_vals_Names_Strand_Aym")
+
+P_vals_Names_Strand_Aym.bubble_table <- get_bubble_table(P_vals_Names_Strand_Aym)
+
+
+sup4.b <- ggplot() +
+  geom_point(data=P_vals_Names_Strand_Aym.bubble_table, aes(Features, Enrichment, size=logP, colour=significance )) +
+  theme_bw() +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 15))  + theme(axis.text = element_text(vjust = 0))+labs(x = NULL, y = "Transcriptional strand asymmetry
+") +
+   guides(size=guide_legend(title="-log(p-value)")) +
+  scale_color_manual(name = "Significance", labels = c("Not significant", "p-value < 0.05", "p-value < 0.001"), values=c("black", "darkorange", "firebrick" )) +
+  geom_hline(yintercept = 0.5, linetype="dashed") +
+  ylim(c(0.2, 0.8)) +
+  theme(axis.text.x = element_text(vjust = 0.25))
+
+sup4.b
+```
+
+
+```{r}
+
+P_vals_Names_Strand_Aym_ChIPSeq <-  fread("./Rebuttal/P_vals_Names_Strand_Aym_only_motif (2)")
+
+
+
+
+P_vals_Names_Strand_Aym_ChIPSeq <- get_bubble_table(P_vals_Names_Strand_Aym)
+P_vals_Names_Strand_Aym_ChIPSeq <- t(P_vals_Names_Strand_Aym)
+P_vals_Names_Strand_Aym_ChIPSeq <- data.frame(P_vals_Names_Strand_Aym_ChIPSeq)
+P_vals_Names_Strand_Aym_ChIPSeq$feature <- row.names(P_vals_Names_Strand_Aym_ChIPSeq)
+P_vals_Names_Strand_Aym_ChIPSeq <- data.table(P_vals_Names_Strand_Aym_ChIPSeq)
+colnames(P_vals_Names_Strand_Aym_ChIPSeq) <- as.character(unlist(P_vals_Names_Strand_Aym_ChIPSeq[1,]))
+P_vals_Names_Strand_Aym_ChIPSeq = P_vals_Names_Strand_Aym_ChIPSeq[-1, ]
+colnames(P_vals_Names_Strand_Aym_ChIPSeq) <- c("Enrichment", "p.val", "Features")
+
+P_vals_Names_Strand_Aym_ChIPSeq$logP <- -log10(as.numeric(P_vals_Names_Strand_Aym_ChIPSeq$p.val))
+
+P_vals_Names_Strand_Aym_ChIPSeq$Features <-  factor(P_vals_Names_Strand_Aym_ChIPSeq$Features, levels= c("Upstream 1kB of TSS", "5'UTR", "Genic",  "Coding", "Intronic", "3'UTR", "Downstream 1kB of TES"))
+
+P_vals_Names_Strand_Aym_ChIPSeq[ , Enrichment:=as.numeric(as.character(Enrichment)) ]
+P_vals_Names_Strand_Aym_ChIPSeq[ , significance:="NS" ]
+P_vals_Names_Strand_Aym_ChIPSeq[ logP  >  -log10(0.05)  , significance:="S" ]
+P_vals_Names_Strand_Aym_ChIPSeq[ logP  >  -log10(0.001) , significance:="SS" ]
+
+
+sup4.a <-  ggplot() +
+  geom_point(data=P_vals_Names_Strand_Aym_ChIPSeq, aes(Features, Enrichment, size=logP, colour=significance )) +
+  theme_bw() +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 15))  + theme(axis.text = element_text(vjust = 0))+labs(x = NULL, y = "Transcriptional strand asymmetry
+") +
+   guides(size=guide_legend(title="-log(p-value)")) +
+  scale_color_manual(name = "Significance", labels = c("Not significant", "p-value < 0.05", "p-value < 0.001"), values=c("black", "darkorange", "firebrick" )) +
+  geom_hline(yintercept = 0.5, linetype="dashed") +
+  ylim(c(0.2, 0.8)) +
+  theme(axis.text.x = element_text(vjust = 0.25))
+sup4.a
+```
+
+```{r}
+sup4.c <- ggdraw() + draw_image("Rebuttal/image.png")
+
+white <-  ggdraw()
+```
+
+
+```{r, fig.height=9, fig.width=18}
+sup4.ab <- plot_grid(sup4.a, sup4.b,  ncol=1, labels="AUTO" )
+
+plot_grid( sup4.ab, white, sup4.c, nrow=1, labels=c("", "", "C"), rel_widths = c(1, 0.1, 1 ) )
+```
+
+
+
+** Population varian analysis **
+
+
+
+```{r}
+
+
+
+read_dist_table_bin <- function(path, Total){
+  
+dist_table <- data.table(read_delim(path, 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE))
+
+dist_table <- dist_table[, 2:2001]
+dist_table <- data.table(as.data.frame(t(dist_table)))
+colnames(dist_table) <- c("Position", "Occurrences")
+
+dist_table <- cbind(dist_table, dist_table[, binconf(Occurrences, total, alpha=0.05) ])
+
+dist_table[,mean:=mean(PointEst)]
+dist_table[, `:=`(  Enrrichment=PointEst/mean, Enrrichment.Upper=Upper/mean, Enrrichment.Lower=Lower/mean )]
+
+
+dist_table[, Position:=Position-1]
+
+return(dist_table)  
+}
+
+
+```
+
+
+
+
+```{r}
+
+get_norm_enrichment <- function(feature, path_signal, path_control, total, ext){
+
+  signal <- read_dist_table_bin(paste0(path_signal, feature, ext ), total)
+  control <- read_dist_table_bin(paste0(path_control, feature, ext), total)
+  
+  signal_control <- merge(signal, control, by="Position" )
+  
+  
+  signal_control[ , `:=`(Enrrichment=(Enrrichment.x / Enrrichment.y), Enrrichment.Upper=(Enrrichment.Upper.x / Enrrichment.Upper.y), Enrrichment.Lower=(Enrrichment.Lower.x / Enrrichment.Lower.y) ) ]
+  
+  signal_control[ , .(Feature=feature, Position, Enrrichment, Enrrichment.Upper,Enrrichment.Lower)]
+
+}
+```
+
+
+
+```{r}
+
+get_unnorm_enrichment <- function(feature, path_signal,  total, ext){
+
+  signal <- read_dist_table_bin(paste0(path_signal, feature, ext ), total)
+
+  
+  signal[ , .(Feature=feature, Position, Enrrichment, Enrrichment.Upper,Enrrichment.Lower)]
+
+}
+```
+
+
+
+
+```{r}
+
+
+Total.Non_B.norm.enrichment <- data.table()
+
+for (feature in c("IR", "MR", "DR", "STR", "G4", "H_DNA", "Z_DNA")){
+  
+  
+  non_b.norm.enrichment.structural_variants <- get_norm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad_v2.1_sv.sites.from.vcf.filtered." ,
+                                                            "./Nucleotide_resolution_plots/gnomad_v2.1_sv.sites.from.vcf.filtered.controls.",
+                                                            505529, ".list.out.num" )
+  non_b.norm.enrichment.structural_variants[ , Mutation_type:="Structural variants" ]
+  
+  
+  non_b.norm.enrichment.indels <- get_norm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad.genomes.r2.1.1.sites_indels.bed.PASS." ,
+                                                            "./Nucleotide_resolution_plots/Indels_controls.bed.PASS_SIMS.",
+                                                            25925202, ".list.out.num" )
+  non_b.norm.enrichment.indels[ , Mutation_type:="Indels" ]
+  
+  
+  non_b.norm.enrichment.substitutions <- get_norm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad.genomes.r2.1.1.sites_subs.bed.PASS." ,
+                                                            "./Nucleotide_resolution_plots/Subs_controls.bed.PASS_SIMS.",
+                                                            204063503, ".list.out.num" )
+  non_b.norm.enrichment.substitutions[ , Mutation_type:="Substitutions" ]
+  
+  Total.Non_B.norm.enrichment <- rbind(Total.Non_B.norm.enrichment, non_b.norm.enrichment.structural_variants)
+  Total.Non_B.norm.enrichment <- rbind(Total.Non_B.norm.enrichment, non_b.norm.enrichment.indels)
+  Total.Non_B.norm.enrichment <- rbind(Total.Non_B.norm.enrichment, non_b.norm.enrichment.substitutions)
+  
+}
+
+
+
+```
+
+
+
+
+
+
+
+
+```{r}
+Total.Non_B.norm.enrichment$Mutation_type <- factor(Total.Non_B.norm.enrichment$Mutation_type , levels=c("Substitutions", "Indels", "Structural variants"  ) )
+Total.Non_B.norm.enrichment$Feature <- factor(Total.Non_B.norm.enrichment$Feature  , levels= c("DR", "G4", "H_DNA", "IR", "MR", "STR", "Z_DNA"))
+```
+
+
+
+```{r, fig.height=5, fig.width=11}
+
+Total.Non_B.norm.enrichment[ , `:=`(Enrrichment.mean=mean(Enrrichment), 
+                                    Enrrichment.Upper.mean=mean(Enrrichment.Upper), 
+                                    Enrrichment.Lower.mean=mean(Enrrichment.Lower)  ), by=c("Feature", "Mutation_type") ]
+
+fig1.h <- ggplot(Total.Non_B.norm.enrichment)+
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Feature)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Feature, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.3) +
+  xlim(c(-250,250)) +
+  facet_wrap( . ~ Mutation_type, scales="free_y" ) +
+  theme(text = element_text(size=15)) +
+  theme_bw()+
+  ylab("Enrrichment") +
+  scale_fill_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+  scale_color_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+   theme(legend.position = "top", legend.direction = "horizontal") +
+  guides(fill = guide_legend(nrow = 1))
+
+
+fig1.h
+```
+
+
+
+
+### Supplementary data not normalized
+
+
+
+```{r}
+
+
+Total.Non_B.enrichment <- data.table()
+
+for (feature in c("IR", "MR", "DR", "STR", "G4", "H_DNA", "Z_DNA")){
+  
+  
+  non_b.enrichment.structural_variants <- get_unnorm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad_v2.1_sv.sites.from.vcf.filtered." ,
+                                                            505529, ".list.out.num" )
+  non_b.enrichment.structural_variants[ , Mutation_type:="Structural variants" ]
+  
+  
+  non_b.enrichment.indels <- get_unnorm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad.genomes.r2.1.1.sites_indels.bed.PASS." ,
+                                                            25925202, ".list.out.num" )
+  non_b.enrichment.indels[ , Mutation_type:="Indels" ]
+  
+  
+  non_b.enrichment.substitutions <- get_unnorm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/gnomad.genomes.r2.1.1.sites_subs.bed.PASS." ,
+                                                            204063503, ".list.out.num" )
+  non_b.enrichment.substitutions[ , Mutation_type:="Substitutions" ]
+  
+  Total.Non_B.enrichment <- rbind(Total.Non_B.enrichment, non_b.enrichment.structural_variants)
+  Total.Non_B.enrichment <- rbind(Total.Non_B.enrichment, non_b.enrichment.indels)
+  Total.Non_B.enrichment <- rbind(Total.Non_B.enrichment, non_b.enrichment.substitutions)
+  
+}
+
+
+
+```
+
+
+
+```{r, fig.height=6, fig.width=9}
+
+Total.Non_B.enrichment[ , `:=`(Enrrichment.mean=mean(Enrrichment), 
+                                    Enrrichment.Upper.mean=mean(Enrrichment.Upper), 
+                                    Enrrichment.Lower.mean=mean(Enrrichment.Lower)  ), by=c("Feature", "Mutation_type") ]
+
+Total.Non_B.enrichment$Mutation_type <- factor(Total.Non_B.enrichment$Mutation_type , levels=c("Substitutions", "Indels", "Structural variants"  ) )
+Total.Non_B.enrichment$Feature <- factor( Total.Non_B.enrichment$Feature, levels= c("DR", "G4", "H_DNA", "IR", "MR", "STR", "Z_DNA"))
+
+
+
+ggplot(Total.Non_B.enrichment[Mutation_type=="Structural variants"])+
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Feature)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Feature, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.3) +
+  xlim(c(-250,250)) +
+  #facet_wrap( . ~ Mutation_type, scales="free_y" ) +
+  theme(text = element_text(size=15)) +
+  theme_bw()+
+  ylab("Enrrichment") +
+  scale_fill_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+  scale_color_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+   theme(legend.position = "top", legend.direction = "horizontal") +
+  guides(fill = guide_legend(nrow = 1)) +
+  ggtitle("Structural Variants") +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=16), plot.title = element_text(hjust=0.5, size=18)  )
+```
+
+## Experimental data
+
+```{r}
+
+
+Total.experimental.Non_B.norm.enrichment <- data.table()
+
+for (feature in c("G4_Ab_K_PDS", "G4_Ab", "G4_seq_K", "G4_seq_PDS")){
+
+
+  experimental.enrichment.structural_variants <- get_norm_enrichment(feature, 
+                                                                    "./Nucleotide_resolution_plots/experimental/gnomad_v2.1_sv.sites.from.vcf.filtered." ,
+                                                                    "./Nucleotide_resolution_plots/experimental/gnomad_v2.1_sv.sites.from.vcf.filtered.controls.",
+                                                                    505529, ".out.num")
+
+ experimental.enrichment.structural_variants[ , Mutation_type:="Structural variants" ]
+ 
+ 
+
+   experimental.enrichment.indels <- get_norm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/experimental/gnomad.genomes.r2.1.1.sites_indels.bed.PASS." ,
+                                                            "./Nucleotide_resolution_plots/experimental/Indels_controls.bed.PASS_SIMS.",
+                                                            25925202, ".out.num" )
+  experimental.enrichment.indels[ , Mutation_type:="Indels" ]
+  
+  
+  experimental.enrichment.substitutions <- get_norm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/experimental/gnomad.genomes.r2.1.1.sites_subs.bed.PASS." ,
+                                                            "./Nucleotide_resolution_plots/experimental/Subs_controls.bed.PASS_SIMS.",
+                                                            204063503, ".out.num" )
+  experimental.enrichment.substitutions[ , Mutation_type:="Substitutions" ]
+ 
+ 
+
+ 
+  Total.experimental.Non_B.norm.enrichment <- rbind(Total.experimental.Non_B.norm.enrichment, experimental.enrichment.structural_variants)
+  Total.experimental.Non_B.norm.enrichment <- rbind(Total.experimental.Non_B.norm.enrichment, experimental.enrichment.indels)
+  Total.experimental.Non_B.norm.enrichment <- rbind(Total.experimental.Non_B.norm.enrichment, experimental.enrichment.substitutions)
+  
+  
+}
+
+ 
+ 
+```
+
+
+
+
+```{r, fig.height=5, fig.width=5}
+
+Total.experimental.Non_B.norm.enrichment[ , `:=`(Enrrichment.mean=mean(Enrrichment), 
+                                    Enrrichment.Upper.mean=mean(Enrrichment.Upper), 
+                                    Enrrichment.Lower.mean=mean(Enrrichment.Lower)  ), by=c("Feature", "Mutation_type") ]
+
+
+sup3.a <- ggplot(data = Total.experimental.Non_B.norm.enrichment[ Feature=="G4_Ab_K_PDS", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+  
+
+
+sup3.b <- ggplot(data = Total.experimental.Non_B.norm.enrichment[ Feature=="G4_Ab", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+
+sup3.c <-  ggplot(data = Total.experimental.Non_B.norm.enrichment[ Feature=="G4_seq_K", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+
+sup3.d <- ggplot(data = Total.experimental.Non_B.norm.enrichment[ Feature=="G4_seq_PDS", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+```
+
+
+
+### Not normalized by controls
+
+
+```{r}
+
+
+Total.experimental.Non_B.enrichment <- data.table()
+
+for (feature in c("G4_Ab_K_PDS", "G4_Ab", "G4_seq_K", "G4_seq_PDS")){
+
+
+  experimental.enrichment.structural_variants <- get_unnorm_enrichment(feature, 
+                                                                    "./Nucleotide_resolution_plots/experimental/gnomad_v2.1_sv.sites.from.vcf.filtered." ,
+                                                                    505529, ".out.num")
+
+ experimental.enrichment.structural_variants[ , Mutation_type:="Structural variants" ]
+ 
+ 
+
+   experimental.enrichment.indels <- get_unnorm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/experimental/gnomad.genomes.r2.1.1.sites_indels.bed.PASS." ,
+                                                            25925202, ".out.num" )
+  experimental.enrichment.indels[ , Mutation_type:="Indels" ]
+  
+  
+  experimental.enrichment.substitutions <- get_unnorm_enrichment(feature, 
+                                                            "./Nucleotide_resolution_plots/experimental/gnomad.genomes.r2.1.1.sites_subs.bed.PASS." ,
+                                                            204063503, ".out.num" )
+  experimental.enrichment.substitutions[ , Mutation_type:="Substitutions" ]
+ 
+ 
+
+ 
+  Total.experimental.Non_B.enrichment <- rbind(Total.experimental.Non_B.enrichment, experimental.enrichment.structural_variants)
+  Total.experimental.Non_B.enrichment <- rbind(Total.experimental.Non_B.enrichment, experimental.enrichment.indels)
+  Total.experimental.Non_B.enrichment <- rbind(Total.experimental.Non_B.enrichment, experimental.enrichment.substitutions)
+  
+  
+}
+
+ 
+ 
+```
+
+
+
+
+
+```{r, fig.height=5, fig.width=5}
+
+Total.experimental.Non_B.enrichment[ , `:=`(Enrrichment.mean=mean(Enrrichment), 
+                                    Enrrichment.Upper.mean=mean(Enrrichment.Upper), 
+                                    Enrrichment.Lower.mean=mean(Enrrichment.Lower)  ), by=c("Feature", "Mutation_type") ]
+
+
+ggplot(data = Total.experimental.Non_B.enrichment[ Feature=="G4_Ab_K_PDS", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+  
+
+
+ggplot(data = Total.experimental.Non_B.enrichment[ Feature=="G4_Ab", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+
+ggplot(data = Total.experimental.Non_B.enrichment[ Feature=="G4_seq_K", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+
+ggplot(data = Total.experimental.Non_B.enrichment[ Feature=="G4_seq_PDS", ]) +
+  geom_line(aes(x=Position,y=Enrrichment/Enrrichment.mean, colour=Mutation_type)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment/Enrrichment.mean, fill=Mutation_type, ymin=Enrrichment.Lower/Enrrichment.Lower.mean, ymax=Enrrichment.Upper/Enrrichment.Upper.mean), alpha=0.5) +
+  xlim(c(-400,400)) +
+  ylab("Enrrichment") +
+  theme_bw() +
+  labs(fill="Mutation type", colour="Mutation type") +
+  theme(legend.position = "top") 
+
+```
+
+
+
+
+
+
+
+```{r}
+Mutations_Total <- fread("Mutations_Total.txt")
+colnames(Mutations_Total) <- c("Type", "Counts")
+
+for (i in 1:nrow(Mutations_Total)){
+  
+  
+  get_norm_enrichment(Mutations_Total[ i, Type],  "./Nucleotide_resolution_plots/",  Mutations_Total[ i, Counts] ) 
+  
+  
+  
+}
+
+```
+
+```{r}
+"./Nucleotide_resolution_plots/"
+```
+
+
+```{r}
+
+plot_density <- function(up_plus, up_minus, down_plus, down_minus){
+
+  
+  up_TOTAL <-  merge(up_plus, up_minus, by="Position")
+  up_TOTAL[,Occurrences:=Occurrences.x+Occurrences.y]
+  up_TOTAL[,median:=median(Occurrences)]
+  up_TOTAL[, Enrrichment:=Occurrences/median]
+  up_TOTAL[, Position:=Position-1]
+  
+  
+  down_TOTAL <-  merge(down_plus, down_minus, by="Position")
+  down_TOTAL[,Occurrences:=Occurrences.x+Occurrences.y]
+  down_TOTAL[,median:=median(Occurrences)]
+  down_TOTAL[, Enrrichment:=Occurrences/median]
+  down_TOTAL[, Position:=Position-1]
+  
+  up_TOTAL[ ,exon_pos:="Upstream"]
+  down_TOTAL[ ,exon_pos:="Downstream"]
+  
+  TOTAL <- rbind(up_TOTAL, down_TOTAL)
+  
+  TOTAL$exon_pos <-  factor(TOTAL$exon_pos, levels=c("Upstream", "Downstream" )) 
+  
+  p <- ggplot(TOTAL)+
+    geom_line(aes(x=Position,y=Enrrichment)) +
+    facet_grid( . ~ exon_pos ) +
+    theme_bw()
+  
+  show(p)
+  
+  TOTAL
+  
+  
+
+}
+```
+
+
+
+### TSS  ###
+
+
+
+
+```{r}
+
+
+read_dist_table_bin.plus_minus <- function(path.plus, path.minus, Total){
+  
+dist_table.plus <- data.table(read_delim(path.plus, 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE))
+
+dist_table.plus <- dist_table.plus[, 2:2001]
+dist_table.plus <- data.table(as.data.frame(t(dist_table.plus)))
+colnames(dist_table.plus) <- c("Position", "Occurrences")
+
+
+dist_table.minus <- data.table(read_delim(path.minus, 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE))
+
+dist_table.minus <- dist_table.minus[, 2:2001]
+dist_table.minus <- data.table(as.data.frame(t(dist_table.minus)))
+colnames(dist_table.minus) <- c("Position", "Occurrences")
+
+
+dist_table.minus[ , Position:=Position*-1 ]
+dist_table <- merge(dist_table.plus, dist_table.minus, by="Position")
+
+dist_table[ , Occurrences:=(Occurrences.x +Occurrences.y) ]
+
+dist_table <- cbind(dist_table, dist_table[, binconf(Occurrences, total, alpha=0.05) ])
+
+dist_table[,mean:=mean(PointEst)]
+dist_table[, `:=`(  Enrrichment=PointEst/mean, Enrrichment.Upper=Upper/mean, Enrrichment.Lower=Lower/mean )]
+
+
+dist_table[, Position:=Position-1]
+
+return(dist_table)  
+}
+
+
+
+```
+
+
+
+```{r}
+
+non_b_features <- c("G4", "DRs", "H_DNAs", "IRs", "MRs", "STRs", "Z_DNA")
+
+TSS.ALL <- data.table()
+
+for (feature in non_b_features){
+  
+  plus_path <- paste0("./TSS/Ensembl.genes_hg19_TSSs_plus_strand.score.All_", feature, ".tsv.clean.genic.list.out.num")
+  minus_path <- paste0("./TSS/Ensembl.genes_hg19_TSSs_minus_strand.score.All_", feature, ".tsv.clean.genic.list.out.num")
+  
+  TSS.feature <- read_dist_table_bin.plus_minus(plus_path, minus_path, 204940)
+  
+  TSS.feature[ , Feature:=feature ]
+  
+  TSS.ALL <- rbind(TSS.ALL, TSS.feature)
+
+} 
+
+
+```
+
+
+
+```{r, fig.height=6.5, fig.width=8}
+
+fig2.f <- ggplot(TSS.ALL)+
+  geom_line(aes(x=Position,y=Enrrichment, colour=Feature)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment, fill=Feature, ymin=Enrrichment.Lower, ymax=Enrrichment.Upper), alpha=0.3) +
+  xlim(c(-250,250)) +
+  theme(text = element_text(size=15)) +
+  theme_bw()+
+  ylab("Enrrichment") +
+  xlab("Position relative to TSS") +
+  scale_fill_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+  scale_color_discrete(name = "Non-B DNA category", labels = c("DR", "G4", "H-DNA", "IR", "MR", "STR", "Z-DNA")) +
+   theme(legend.position = "top", legend.direction = "horizontal") +
+  guides(fill = guide_legend(nrow = 1))
+
+fig2.f
+
+```
+
+
+```{r}
+
+TSS.G4_AB <- read_dist_table_bin.plus_minus("./TSS/Experimental/Ensembl.genes_hg19_TSSs_plus_strand.score.GSE107690_K562_High_confidence_peaks.bed.txt..list.out.num",
+                                            "./TSS/Experimental/Ensembl.genes_hg19_TSSs_minus_strand.score.GSE107690_K562_High_confidence_peaks.bed.txt..list.out.num",
+                                            204940)
+
+TSS.G4_K <- read_dist_table_bin.plus_minus("./TSS/Experimental/Ensembl.genes_hg19_TSSs_plus_strand.score.GSM3003539_Homo_all_w15_th-1_plus_minus.hits.max.K.w50.25.bed.txt..list.out.num",
+                                            "./TSS/Experimental/Ensembl.genes_hg19_TSSs_minus_strand.score.GSM3003539_Homo_all_w15_th-1_plus_minus.hits.max.K.w50.25.bed.txt..list.out.num",
+                                            204940)
+
+TSS.G4_PDS <- read_dist_table_bin.plus_minus("./TSS/Experimental/Ensembl.genes_hg19_TSSs_plus_strand.score.GSM3003540_Homo_all_w15_th-1_plus_minus.hits.max.PDS.w50.35.bed.txt..list.out.num",
+                                            "./TSS/Experimental/Ensembl.genes_hg19_TSSs_minus_strand.score.GSM3003540_Homo_all_w15_th-1_plus_minus.hits.max.PDS.w50.35.bed.txt..list.out.num",
+                                            204940)
+
+TSS.G4_AB[, Feature:="G4 ChiP-seq"]
+TSS.G4_K[, Feature:="G4-seq K"]
+TSS.G4_PDS[, Feature:="G4-seq PDS"]
+
+
+TSS.G4_ALL <- rbind(TSS.G4_AB, TSS.G4_K)
+TSS.G4_ALL <- rbind(TSS.G4_ALL, TSS.G4_PDS)
+
+```
+
+
+
+
+```{r, fig.height=6.5, fig.width=6.5}
+
+fig2.g <- ggplot(TSS.G4_ALL)+
+  geom_line(aes(x=Position,y=Enrrichment, colour=Feature)) +
+  geom_ribbon(aes(x=Position,y=Enrrichment, fill=Feature, ymin=Enrrichment.Lower, ymax=Enrrichment.Upper), alpha=0.3) +
+  xlim(c(-500,500)) +
+  theme(text = element_text(size=15)) +
+  theme_bw()+
+  scale_fill_discrete(name = "Experiment") +
+  scale_color_discrete(name = "Experiment") +  
+  ylab("Enrrichment") +
+    xlab("Position relative to TSS") +
+   theme(legend.position = "top", legend.direction = "horizontal") +
+  guides(fill = guide_legend(nrow = 1))
+
+fig2.g
+
+```
+
+### Clinical Variations
+
+```{r}
+
+clinvar.scores <- fread("./Clin_vars/clinvars_non_Bs_types_expected_observed.txt")
+clinvar.sd <- fread("./Clin_vars/clinvars_non_Bs_types_expected_observed_standard_deviations.txt")
+
+
+clinvar.scores.melted <- melt(clinvar.scores, variable.name="Feature", value.name="OR")
+clinvar.sd.melted <- melt(clinvar.sd, variable.name="Feature", value.name="sd")
+
+clinvar <- merge(clinvar.scores.melted, clinvar.sd.melted, by=c("motif", "Feature"))
+
+
+```
+
+```{r}
+clinvar
+```
+
+
+```{r}
+ggplot(clinvar, aes( x= OR, y=Feature, fill=motif  )) +
+  geom_bar( stat = "identity", position = position_dodge(1), width=1) +
+   geom_errorbar(aes( xmin = OR -sd, xmax =OR + sd), width=0.5, position=position_dodge(1), stat = "identity") +
+  theme_bw() +
+  xlab("log(OR)") +
+  ylab("") +
+  xlim(-2.5,2.5) +
+  scale_fill_manual(name = "Clinical variant type", values=c("dodgerblue4", "cornflowerblue" , "darkorange",  "firebrick" )) + 
+  theme(legend.position = "top") 
+  
+```
+```{r}
+odd_file.path <- 'Heatmaps_bubble/ensembl_df_regulatory_NBs.csv'
+p_file.path <- "Heatmaps_bubble/ensembl_df_regulatory_NBs_stats.csv"
+```
+
+
+
+```{r}
+
+bubble_heatmap <- function(odd_file.path,p_file.path, max.p.val, trans, color_axis, feature.levels ){
+
+odd_file <-  fread(odd_file.path)
+p_file <-  fread(p_file.path)
+
+odd_file.melted <- melt(odd_file, variable.name="Feature", value.name="OR" )
+p_file.melted <- melt(p_file, variable.name="Feature", value.name="p.val" )
+
+all_buble <- as.data.table(merge(odd_file.melted, p_file.melted, by=c("Motif", "Feature")))
+
+all_buble[ , adj.p.val:=p.val]
+all_buble[ p.val<max.p.val, adj.p.val:=max.p.val]
+
+{if (trans=="log10") {
+all_buble[, t.OR :=log10(OR) ]
+max.abs.odd <- all_buble[ , log10(max(abs(OR))) ]
+}
+else if (trans=="NA") {
+all_buble[, t.OR :=OR ]
+max.abs.odd <- all_buble[ , max(abs(OR)) ]
+}}
+
+
+
+all_buble$Feature <- factor(all_buble$Feature, levels = feature.levels )
+
+ggplot( all_buble, aes( Feature, Motif) ) +
+  geom_point(aes(colour=t.OR, size = -log10(adj.p.val) )) +
+  scale_color_gradient2(name = color_axis, midpoint = 0, low="blue", mid="grey", high="red", na.value="white", limits=c(-max.abs.odd, max.abs.odd))+
+  scale_size(name=expression(-log[10](adj.p-value))) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0),
+    axis.title = element_text(colour = NA),
+    strip.text = element_text(hjust = 0.5), legend.position = "top")  +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 15))
+
+
+}
+```
+
+```{r, fig.width=8, fig.height=5}
+
+fig2.a <-  bubble_heatmap("Heatmaps_bubble/ensembl_df_regulatory_NBs.csv",
+               "Heatmaps_bubble/ensembl_df_regulatory_NBs_stats.csv",
+               1e-20,
+               "log10",
+               expression(log[10](Enrichment)),
+               c( "Promoter Flanking Region", "TF binding site" , "Promoter" , "Enhancer", "CTCF Binding Site", "Open chromatin" ))
+
+fig2.a
+
+```
+
+This following plot has a blank dot, posible an  
+
+```{r, fig.width=8, fig.height=5}
+
+fig2.b <- bubble_heatmap("Heatmaps_bubble/genomic_compartments_df_NBs.csv",
+               "Heatmaps_bubble/genomic_compartments_df_NBs_stats.csv",
+               1e-100,
+               "log10",
+               expression(log[10](Enrichment)),
+               c( "1kB upstream of TSS", "5UTR", "Coding exons", 'Introns', "3UTR", "1kB downstream of TES")) 
+
+fig2.b
+
+```
+
+
+```{r,  fig.width=8, fig.height=5}
+
+
+fig2.c <-  bubble_heatmap("Heatmaps_bubble/G4_seq_Ensembl_clustermap",
+               "Heatmaps_bubble/G4_seq_Ensembl_clustermap_p_val",
+               1e-50,
+               "NA",
+               "Z-score",
+               c( "Promoter Flanking Region", "TF binding site" , "Promoter" , "Enhancer", "CTCF Binding Site", "Open chromatin" )) 
+
+fig2.c
+```
+
+
+
+```{r,  fig.width=8, fig.height=5}
+
+
+fig2.d <-  bubble_heatmap("Heatmaps_bubble/G4_seq_genic_clustermap",
+               "Heatmaps_bubble/G4_seq_genic_clustermap_p_vals",
+               1e-50,
+               "NA",
+               "Z-score",
+               c( "1kB upstream of TSS", "5UTR", "Coding exons", 'Introns', "3UTR", "1kB downstream of TES")) 
+
+fig2.d
+```
+
+
+## Vulcano Plots
+
+
+```{r}
+TF_NB_HEPG2 <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_HEPG2 (1).txt')
+TF_NB_K562 <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_K562 (1).txt')
+TF_NB_neuronal <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_neuronal (1).txt')
+
+
+
+colnames(TF_NB_HEPG2) <- c("Gene", "Delta", "p.value")
+colnames(TF_NB_K562) <- c("Gene", "Delta", "p.value")
+colnames(TF_NB_neuronal) <- c("Gene", "Delta", "p.value")
+
+TF_NB_HEPG2[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_HEPG2[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_HEPG2[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+
+TF_NB_K562[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_K562[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_K562[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+TF_NB_neuronal[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_neuronal[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_neuronal[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+```
+
+```{r}
+library(ggrepel)
+```
+
+
+
+```{r}
+fig3.h <- ggplot(TF_NB_HEPG2) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_HEPG2[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  
+  xlim(c(-2,2)) +
+  ylim(c(0,65)) +
+  geom_text_repel(data=TF_NB_HEPG2[!is.na(sig) ,],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ), 
+                  size =  3,
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 8,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2 ) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative Expression Difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+fig3.h
+```
+
+
+
+```{r}
+fig3.i  <- ggplot(TF_NB_K562) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_K562[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  #xlim(c(-2,2)) +
+  ylim(c(0,115)) +
+  geom_text_repel(data=TF_NB_K562[!is.na(sig),],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ),
+                  size =  3,
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 8,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2 ) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative Expression Difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+fig3.i
+```
+
+
+
+```{r}
+sup10.a <- ggplot(TF_NB_neuronal) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_neuronal[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  xlim(c(-3,3)) +
+  ylim(c(0,115)) +
+  geom_text_repel(data=TF_NB_neuronal[!is.na(sig),],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ),
+                  size =  3,
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 12,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2 ) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative expression difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+sup10.a
+```
+
+
+#### Uncorrected
+
+
+
+```{r}
+TF_NB_HEPG2.uncor <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_HEPG2_uncor (1).txt')
+TF_NB_K562.uncor <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_K562_uncor (1).txt')
+TF_NB_neuronal.uncor <- fread('/Users/gp7/Google_Drive/Results/Promoters/Rebuttal/TF_NB_neuronal_uncor (1).txt')
+
+
+
+colnames(TF_NB_HEPG2.uncor) <- c("Gene", "Delta", "p.value")
+colnames(TF_NB_K562.uncor) <- c("Gene", "Delta", "p.value")
+colnames(TF_NB_neuronal.uncor) <- c("Gene", "Delta", "p.value")
+
+TF_NB_HEPG2.uncor[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_HEPG2.uncor[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_HEPG2.uncor[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+
+TF_NB_K562.uncor[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_K562.uncor[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_K562.uncor[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+TF_NB_neuronal.uncor[(-log10(p.value)>15 & abs(Delta)>0.3) , sig:="TF"]
+TF_NB_neuronal.uncor[-log10(p.value)>100 , p.value:=1e-100 ]
+TF_NB_neuronal.uncor[Gene %in% c("Z-DNA", "G4", "IR", "DR", "MR", "STR"),  sig:="Non-b" ]
+
+```
+
+
+
+```{r}
+sup8.a <-  ggplot(TF_NB_HEPG2.uncor) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_HEPG2.uncor[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  
+  xlim(c(-2,2)) +
+  ylim(c(0,65)) +
+  geom_text_repel(data=TF_NB_HEPG2.uncor[!is.na(sig) ,],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ), 
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 8,
+                  nudge_x      = 0.05,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2,
+                  max.overlaps = Inf) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative expression difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+sup8.a
+```
+
+
+
+```{r}
+sup8.b <- ggplot(TF_NB_K562.uncor) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_K562.uncor[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  #xlim(c(-2,2)) +
+  ylim(c(0,115)) +
+  geom_text_repel(data=TF_NB_K562.uncor[!is.na(sig) & -log10(p.value)>35,],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ), 
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 8,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2,
+                  max.overlaps = Inf) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative expression difference") +
+  ylab(expression(-log[10]('Adjusted p-value'))) 
+
+sup8.b
+```
+
+
+
+
+```{r}
+sup10.b <- ggplot(TF_NB_neuronal.uncor) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_neuronal.uncor[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  xlim(c(-3,3)) +
+  ylim(c(0,115)) +
+  geom_text_repel(data=TF_NB_neuronal.uncor[!is.na(sig),],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ), 
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 12,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2 ) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative expression difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+sup10.b
+```
+```{r}
+sup10.b <- ggplot(TF_NB_neuronal.uncor) +
+  geom_point(aes(Delta, -log10(p.value)  ),  alpha=0.3 ) +
+  geom_point(data=TF_NB_neuronal.uncor[(-log10(p.value)>10 & abs(Delta)>0.3),],
+             aes(Delta, -log10(p.value)  ),  alpha=0.3, color="red" ) +
+  xlim(c(-3,3)) +
+  ylim(c(0,115)) +
+  geom_text_repel(data=TF_NB_neuronal.uncor[!is.na(sig),],
+                  aes(Delta, -log10(p.value),label=Gene, colour=sig  ),
+                  size =  3,
+                  point.padding = NA,
+                  fontface = "bold", 
+                  nudge_y      = 12,
+                  direction    = "x",
+                  angle        = 90,
+                  segment.size = 0.2 ) +
+  scale_color_manual(values=c("deepskyblue4", "darkgoldenrod")) +
+theme_bw() +
+      theme(legend.position = "none") +
+  xlab("Relative expression difference") +
+  ylab(expression(-log[10]('Adjusted p-value')))
+
+sup10.b
+```
+
+```{r}
+
+```
+
+
+
+
+
+#### GO
+
+```{r}
+
+library(TissueEnrich)
+```
+
+
+```{r}
+GO.G4 <- fread('/Users/gp7/Google_Drive/Results/Promoters/GO/Ensembl.genes_hg19_250bp_up_prom.bed.annotated.G4.txt')
+GO.Z_DNA <- fread('/Users/gp7/Google_Drive/Results/Promoters/GO/Ensembl.genes_hg19_250bp_up_prom.bed.annotated.Z_DNA.txt')
+```
+
