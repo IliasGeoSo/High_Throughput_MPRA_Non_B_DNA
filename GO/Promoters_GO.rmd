@@ -1,0 +1,270 @@
+---
+title: "GO promoters"
+output: html_notebook
+---
+
+```{r}
+library(TissueEnrich)
+library(data.table)
+library(biomaRt)
+library(ggplot2)
+library(cowplot)
+```
+
+
+
+```{r}
+non_B_up <- fread("~/Promoter/Ensembl.genes_hg19_200bp_up_prom.bed.annotated")
+
+
+```
+
+
+```{r}
+
+
+get_tissue_enrrichment <- function(genes, background, data_set ) {
+
+  gs<-GeneSet(geneIds=genes,organism="Homo Sapiens",geneIdType=ENSEMBLIdentifier())
+  bg <- GeneSet(geneIds=background,organism="Homo Sapiens",geneIdType=ENSEMBLIdentifier())
+  
+  output<-teEnrichment(inputGenes = gs, rnaSeqDataset=data_set, backgroundGenes=bg)
+  
+  seEnrichmentOutput<-output[[1]]
+  enrichmentOutput<-setNames(data.frame(assay(seEnrichmentOutput),row.names = rowData(seEnrichmentOutput)[,1]), colData(seEnrichmentOutput)[,1])
+  enrichmentOutput$Tissue<-row.names(enrichmentOutput)
+  
+  return(data.table(enrichmentOutput))
+
+}
+
+```
+
+
+```{r, fig.height=7, fig.width=3.6}
+Z_DNA.up.1 <-  get_tissue_enrrichment(non_B_up[ Z_DNA>0, gene ], non_B_up[ , gene ], 1)
+G4.up.1 <-  get_tissue_enrrichment(non_B_up[ G4>0, gene ], non_B_up[ , gene ], 1)
+STR.up.1 <-  get_tissue_enrrichment(non_B_up[ STR>0, gene ], non_B_up[ , gene ], 1)
+DR.up.1 <-  get_tissue_enrrichment(non_B_up[ DR>0, gene ], non_B_up[ , gene ], 1)
+MR.up.1 <-  get_tissue_enrrichment(non_B_up[ MR>0, gene ], non_B_up[ , gene ], 1)
+IR.up.1 <-  get_tissue_enrrichment(non_B_up[ IR>0, gene ], non_B_up[ , gene ], 1)
+
+Z_DNA.up.1[,feature:="Z_DNA"]
+G4.up.1[,feature:="G4"]
+STR.up.1[,feature:="STR"]
+DR.up.1[,feature:="DR"]
+MR.up.1[,feature:="MR"]
+IR.up.1[,feature:="IR"]
+
+total.up.1 <- rbind(Z_DNA.up.1, G4.up.1, STR.up.1, DR.up.1, MR.up.1, IR.up.1)
+
+total.up.1[!Log10PValue>-log10(0.05), Log10PValue:=NA]
+
+total.up.1$Tissue <- factor(total.up.1$Tissue, levels = rev(levels(as.factor(total.up.1$Tissue))))
+
+
+
+
+sup6.b <- ggplot( total.up.1, aes( feature, Tissue ) ) +
+  geom_point(aes(colour=fold.change, size = Log10PValue) ) +
+  scale_color_gradient2(name =  "Fold change", midpoint = -0.5, low="grey",  high="red", na.value="white", )+
+  scale_size(name=expression(-log[10](adj.p-value))) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0),
+    axis.title = element_text(colour = NA),
+    strip.text = element_text(hjust = 0.5), legend.position = "top")  +
+  scale_x_discrete(position = "top")  +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 45,  vjust = 1, hjust=-0.1))
+
+sup6.b
+
+```
+
+
+
+
+```{r}
+Z_DNA.up.2 <-  get_tissue_enrrichment(non_B_up[ Z_DNA>0, gene ], non_B_up[ , gene ], 2)
+G4.up.2 <-  get_tissue_enrrichment(non_B_up[ G4>0, gene ], non_B_up[ , gene ], 2)
+STR.up.2 <-  get_tissue_enrrichment(non_B_up[ STR>0, gene ], non_B_up[ , gene ], 2)
+DR.up.2 <-  get_tissue_enrrichment(non_B_up[ DR>0, gene ], non_B_up[ , gene ], 2)
+MR.up.2 <-  get_tissue_enrrichment(non_B_up[ MR>0, gene ], non_B_up[ , gene ], 2)
+IR.up.2 <-  get_tissue_enrrichment(non_B_up[ IR>0, gene ], non_B_up[ , gene ], 2)
+
+Z_DNA.up.2[,feature:="Z_DNA"]
+G4.up.2[,feature:="G4"]
+STR.up.2[,feature:="STR"]
+DR.up.2[,feature:="DR"]
+MR.up.2[,feature:="MR"]
+IR.up.2[,feature:="IR"]
+
+total.up.2 <- rbind(Z_DNA.up.2, G4.up.2, STR.up.2, DR.up.2, MR.up.2, IR.up.2)
+
+total.up.2[!Log10PValue>-log10(0.05), Log10PValue:=NA]
+
+ggplot( total.up.2, aes( Tissue, feature) ) +
+  geom_point(aes(colour=fold.change, size = Log10PValue) ) +
+  scale_color_gradient2(name =  "Fold change", midpoint = 1, low="grey",  high="red", na.value="white", )+
+  scale_size(name=expression(-log[10](adj.p-value))) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0),
+    axis.title = element_text(colour = NA),
+    strip.text = element_text(hjust = 0.5), legend.position = "top")  +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 90))
+```
+
+
+
+
+```{r}
+Z_DNA.up.3 <-  get_tissue_enrrichment(non_B_up[ Z_DNA>0, gene ], non_B_up[ , gene ], 3)
+G4.up.3 <-  get_tissue_enrrichment(non_B_up[ G4>0, gene ], non_B_up[ , gene ], 3)
+STR.up.3 <-  get_tissue_enrrichment(non_B_up[ STR>0, gene ], non_B_up[ , gene ], 3)
+DR.up.3 <-  get_tissue_enrrichment(non_B_up[ DR>0, gene ], non_B_up[ , gene ], 3)
+MR.up.3 <-  get_tissue_enrrichment(non_B_up[ MR>0, gene ], non_B_up[ , gene ], 3)
+IR.up.3 <-  get_tissue_enrrichment(non_B_up[ IR>0, gene ], non_B_up[ , gene ], 3)
+
+Z_DNA.up.3[,feature:="Z_DNA"]
+G4.up.3[,feature:="G4"]
+STR.up.3[,feature:="STR"]
+DR.up.3[,feature:="DR"]
+MR.up.3[,feature:="MR"]
+IR.up.3[,feature:="IR"]
+
+total.up.3 <- rbind(Z_DNA.up.3, G4.up.3, STR.up.3, DR.up.3, MR.up.3, IR.up.3)
+
+total.up.3[!Log10PValue>-log10(0.05), Log10PValue:=NA]
+
+ggplot( total.up.3, aes( Tissue, feature) ) +
+  geom_point(aes(colour=fold.change, size = Log10PValue) ) +
+  scale_color_gradient2(name =  "Fold change", midpoint = 1, low="grey",  high="red", na.value="white", )+
+  scale_size(name=expression(-log[10](adj.p-value))) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0),
+    axis.title = element_text(colour = NA),
+    strip.text = element_text(hjust = 0.5), legend.position = "top")  +
+  theme(legend.position = "top", legend.direction = "horizontal", axis.text.x = element_text(angle = 90))
+```
+
+
+
+### GO
+
+
+
+```{r}
+library(clusterProfiler)
+library(enrichplot)
+goplot(ego)
+
+```
+
+```{r, fig.height=10, fig.height=10}
+
+data(geneList, package="DOSE")
+de <- names(geneList)[abs(geneList) > 2]
+
+ego <- enrichGO(non_B_up[ Z_DNA>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="BP", readable=TRUE)
+
+library(enrichplot)
+goplot(ego)
+
+
+non_B_up[ Z_DNA>0, gene ]
+```
+
+
+```{r,  fig.height=8, fig.height=8}
+dotplot(ego, showCategory=30)
+dotplot(ego, split="ONTOLOGY") + facet_grid(ONTOLOGY~., scale="free")
+```
+
+```{r}
+
+Z_DNA.up.ego <- enrichGO(non_B_up[ Z_DNA>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+G4.up.ego <- enrichGO(non_B_up[ G4>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+STR.up.ego <- enrichGO(non_B_up[ STR>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+DR.up.ego <- enrichGO(non_B_up[ DR>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+MR.up.ego <- enrichGO(non_B_up[ MR>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+IR.up.ego <- enrichGO(non_B_up[ IR>0, gene ], keyType="ENSEMBL", OrgDb = "org.Hs.eg.db", ont="ALL", readable=TRUE)
+
+
+Z_DNA.up.ego.summary <-  data.table(summary(Z_DNA.up.ego))
+G4.up.ego.summary <-  data.table(summary(G4.up.ego))
+STR.up.ego.summary <-  data.table(summary(STR.up.ego))
+#DR.up.ego.summary <-  summary(DR.up.ego)
+MR.up.ego.summary <-  data.table(summary(MR.up.ego))
+#IR.up.ego.summary <-  summary(IR.up.ego)
+
+
+Z_DNA.up.ego.summary[, Feature:="Z_DNA"]
+G4.up.ego.summary[, Feature:="G4"]
+STR.up.ego.summary[, Feature:="STR"]
+MR.up.ego.summary[, Feature:="MR"]
+
+TOTAL.up.ego.summary <- rbind(Z_DNA.up.ego.summary, 
+                              G4.up.ego.summary,
+                              STR.up.ego.summary,
+                              MR.up.ego.summary)
+
+TOTAL.up.ego.summary$GeneRatio.num <- sapply(TOTAL.up.ego.summary$GeneRatio, function(x) eval(parse(text=x)))
+```
+
+
+```{r}
+TOTAL.up.ego.summary
+```
+
+```{r}
+TOTAL.up.ego.summary[Description=="hair cycle process", ]
+
+```
+
+
+```{r}
+
+ggplot(TOTAL.up.ego.summary) +
+  geom_density()
+  
+#geom_point(aes(GeneRatio.num, -log10(p.adjust), colour=Feature))
+
+
+
+```
+
+```{r, fig.width=12, fig.height=6.5}
+TOTAL.up.ego.summary.stats <- TOTAL.up.ego.summary[ GeneRatio.num>0.01 & Count>=20, .(ID, p.rank=frank(p.adjust), p.adjust, Description, GeneRatio.num, Count), by="Feature"]
+
+
+TOTAL.up.ego.summary.stats.filter <-  TOTAL.up.ego.summary.stats[ID %in% TOTAL.up.ego.summary.stats[p.rank<=10, ID],  ]
+
+TOTAL.up.ego.summary.stats.filter$Description <- factor(TOTAL.up.ego.summary.stats.filter$Description,
+                                                           levels=TOTAL.up.ego.summary.stats.filter[ order(GeneRatio.num), Description][!duplicated(TOTAL.up.ego.summary.stats.filter[ order(GeneRatio.num), Description])])
+
+sup6.a <-  ggplot(TOTAL.up.ego.summary.stats.filter) +
+  geom_point(aes(GeneRatio.num, Description, colour=-log10(p.adjust), size=Count), alpha=2) +
+  scale_color_gradient2(name =  expression(-log[10](adj.p-value)), midpoint = -4, low="grey",  high="red", na.value="white", )+
+  theme_bw() +
+  theme(legend.position = "top") +
+  facet_grid(. ~ Feature) +
+  xlab("Gene ratio") +
+  ylab("")
+sup6.a
+```
+```{r}
+TOTAL.up.ego.summary[Description=="hair cycle process", ]
+TOTAL.up.ego.summary[Description=="molting cycle process", ]
+TOTAL.up.ego.summary[Description=="hair follicle development", ]
+```
+
+
+#
+
+
+```{r, fig.width=15.6, fig.height=7}
+
+plot_grid(sup6.a, sup6.b, nrow=1, labels="AUTO", rel_widths = c(12, 3.6 ) )
+
+```
+
+
