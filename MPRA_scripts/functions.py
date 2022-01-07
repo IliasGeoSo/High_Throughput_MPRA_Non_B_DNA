@@ -28,7 +28,7 @@ def IR_function(sequence,min_spacer_size,max_spacer_size,arm_size):
         positions=[]    
         for spacer in range(min_spacer_size,max_spacer_size,1):
                 size = spacer+arm_size*2
-                for k in range(len(sequence)-size):
+                for k in range(len(sequence)-size+1):
                         seq_part1=sequence[k:k+arm_size]
                         seq_part2=revc(sequence[k+arm_size+spacer:k+spacer+2*arm_size])
                         if seq_part1==seq_part2:
@@ -43,7 +43,7 @@ def DR_function(sequence,min_spacer_size,max_spacer_size,arm_size):
         positions=[]    
         for spacer in range(min_spacer_size,max_spacer_size,1):
                 size = spacer+arm_size*2
-                for k in range(len(sequence)-size):
+                for k in range(len(sequence)-size+1):
                         seq_part1=sequence[k:k+arm_size]
                         seq_part2=sequence[k+arm_size+spacer:k+spacer+2*arm_size]
                         if seq_part1==seq_part2 and find_reps(seq_part1)<0.8:
@@ -57,7 +57,7 @@ def function_MR(sequence,min_spacer_size,max_spacer_size,arm_size):
         positions=[]
         for spacer in range(min_spacer_size,max_spacer_size,1):
                 size = spacer+arm_size*2
-                for k in range(len(sequence)-size):
+                for k in range(len(sequence)-size+1):
                         seq_part1=sequence[k:k+arm_size]
                         seq_part2=sequence[k+arm_size+spacer:k+spacer+2*arm_size][::-1]
                         if seq_part1==seq_part2:
