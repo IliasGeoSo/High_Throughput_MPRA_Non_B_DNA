@@ -110,7 +110,7 @@ def Z_DNA_find(seq):
         for k in range(1,len(seq),1):
                 if ((seq[k-1] in purines and seq[k] in pyrimidines) or (seq[k-1] in pyrimidines and seq[k] in purines)) and seq[k-1:k+1]!="AT" and seq[k-1:k+1]!="TA":
                         score+=1
-                        if score==len(seq)-1:
+                        if k==len(seq)-1:
                                 scores+=[score]
                 else:
                         scores+=[score]
