@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/350449966.svg)](https://zenodo.org/badge/latestdoi/350449966)
+
 **The code and graphs provided are part of the manuscript entitled: "High-throughput characterization of the role of non-B DNA motifs on promoter function"**
 
 This repository and its constituent sub-folders contain the scripts and tables for the generation of figures for this manuscript.
